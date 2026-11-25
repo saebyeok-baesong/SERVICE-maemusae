@@ -18,6 +18,7 @@ dependencies = [
     "openpyxl>=3.1.5",
     "phonenumbers>=9.0.43",
     "pillow>=13.0.0",
+    "prometheus-fastapi-instrumentator>=8.1.0",
     "psycopg[binary]>=3.3.6",
     "pwdlib[argon2]>=0.3.1",
     "pydantic-settings>=2.16.0",

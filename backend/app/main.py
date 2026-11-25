@@ -1,5 +1,7 @@
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from prometheus_client import CollectorRegistry
+from prometheus_fastapi_instrumentator import Instrumentator
 from sqlalchemy import text
 
 from app.api import api_router
@@ -76,6 +78,14 @@ def create_app() -> FastAPI:
         return {"status": "ok", "database": "ok"}
 
     app.include_router(api_router, prefix="/api")
+
+    # Prometheus 수집용 /metrics. /api 밖에 두어 프론트 프록시(/api/*)로는 외부에 열리지 않습니다 (Ingress 에서도 빼 둡니다).
+    # 프로브(/health, /health/ready)와 /metrics 자신은 세지 않습니다. status 는 2xx/4xx/5xx 로 묶입니다.
+    # 앱마다 registry 를 따로 써서, 테스트처럼 create_app() 을 여러 번 불러도 지표 이름이 겹치지 않습니다.
+    Instrumentator(
+        excluded_handlers=["/metrics", "/health.*"],
+        registry=CollectorRegistry(),
+    ).instrument(app).expose(app, include_in_schema=False)
     return app
 
 
